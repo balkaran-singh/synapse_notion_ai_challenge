@@ -28,36 +28,36 @@ To run this project locally, you will need:
 ## Installation & Setup
 
 1. **Clone the repository:**
-   \`\`\`bash
+   ```bash
    git clone <your-repository-url>
    cd synapse
-   \`\`\`
+   ```
 
 2. **Install dependencies:**
-   \`\`\`bash
+   ```bash
    npm install
-   \`\`\`
+   ```
 
 3. **Configure Environment Variables:**
    * Copy the `.env.example` file to create a new `.env` file.
    * Fill in your respective API keys and Notion Database IDs. 
-   \`\`\`bash
+   ```bash
    cp .env.example .env
-   \`\`\`
+   ```
    *Note: Ensure your `.env` file is included in your `.gitignore` before pushing any code.*
 
 4. **Start the local tunnel:**
    In a separate terminal window, start ngrok to expose your local server to Slack.
-   \`\`\`bash
+   ```bash
    npx ngrok http 3000
-   \`\`\`
+   ```
    Copy the forwarding URL and paste it into your Slack App's Event Subscriptions (append `/webhook/slack` to the URL).
 
 5. **Activate Focus Mode:**
    Start the server using the custom CLI script.
-   \`\`\`bash
+   ```bash
    npm run focus
-   \`\`\`
+   ```
 
 ## Usage Architecture
 1. The developer runs `npm run focus`.
