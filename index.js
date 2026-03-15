@@ -57,7 +57,7 @@ app.post('/webhook/slack', (req, res) => {
           messages: [
             { 
               role: "system", 
-              content: "You are a helpful assistant. Use the provided tools to either create bug tickets or search documentation based on what the user needs." 
+              content: "You are an AI assistant. You MUST use the `search_notion` tool if the user asks a question. You MUST use the `create_ticket` tool if the user reports a bug." 
             },
             { role: "user", content: userMessage }
           ],
@@ -91,14 +91,21 @@ app.post('/webhook/slack', (req, res) => {
         });
 
         const responseMessage = completion.choices[0].message;
+        let resultMessage = "";
+        let logTitle = "";
 
+        // If the AI successfully used a tool
         if (responseMessage.tool_calls) {
           const toolCall = responseMessage.tool_calls[0];
           const functionName = toolCall.function.name;
-          const functionArgs = JSON.parse(toolCall.function.arguments);
-
-          let resultMessage = "";
-          let logTitle = "";
+          // Catch any JSON parsing errors gracefully
+          let functionArgs;
+          try {
+            functionArgs = JSON.parse(toolCall.function.arguments);
+          } catch (e) {
+            console.error("Failed to parse tool arguments:", toolCall.function.arguments);
+            return;
+          }
 
           if (functionName === "search_notion") {
             console.log("Searching Notion for:", functionArgs.query);
@@ -141,19 +148,8 @@ app.post('/webhook/slack', (req, res) => {
             resultMessage = `Ticket Created: *${functionArgs.title}* has been added to the Sprint Tracker.`;
             logTitle = "Created Sprint Ticket";
           }
-
-          await fetch('https://slack.com/api/chat.postMessage', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.SLACK_BOT_TOKEN}`
-            },
-            body: JSON.stringify({
-              channel: channelId,
-              text: resultMessage
-            })
-          });
-
+          
+          // Log it to Notion
           await mcpClient.callTool({
             name: "create-page",
             arguments: {
@@ -165,7 +161,28 @@ app.post('/webhook/slack', (req, res) => {
               })
             }
           });
+
+        } else if (responseMessage.content) {
+          // Fallback: If the AI just talked directly without using a tool
+          console.log("AI responded directly without a tool:", responseMessage.content);
+          resultMessage = responseMessage.content;
         }
+
+        // Send the final message back to Slack
+        if (resultMessage) {
+          await fetch('https://slack.com/api/chat.postMessage', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.SLACK_BOT_TOKEN}`
+            },
+            body: JSON.stringify({
+              channel: channelId,
+              text: resultMessage
+            })
+          });
+        }
+
       } catch (error) {
         console.error("AI or MCP Error:", error);
       }
