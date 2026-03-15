@@ -1,5 +1,8 @@
 # Synapse: The Autonomous Developer Focus Shield
 
+## Demo Video
+[![Synapse Demo Video](https://img.youtube.com/vi/6vKOqXLqEAE/maxresdefault.jpg)](https://www.youtube.com/watch?v=6vKOqXLqEAE)
+
 ## Overview
 Context switching is a developer's worst enemy. When an engineer is in deep focus, constantly switching to Slack to answer documentation questions or manually log bug reports into a sprint tracker shatters productivity. 
 
